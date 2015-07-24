@@ -3,7 +3,9 @@ param([Parameter(Mandatory=$true,ValueFromPipeline=$true)]
   $installation_path,
   [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
   [string]
-  $dcos_url
+  $dcos_url,
+  [string]
+  $add_path
   )
 
 if (-Not(Get-Command python -errorAction SilentlyContinue))
@@ -99,6 +101,36 @@ dcos config set package.cache $env:temp\dcos\package-cache
 dcos config set package.sources '[\"https://github.com/mesosphere/universe/archive/version-1.x.zip\"]'
 
 dcos package update
+
+function AddToPath ($AddedLocation)
+{
+	$Reg = "Registry::HKLM\System\CurrentControlSet\Control\Session Manager\Environment"
+	$OldPath = (Get-ItemProperty -Path "$Reg" -Name PATH).Path
+	$NewPath = $OldPath + ’;’ + $AddedLocation
+	Set-ItemProperty -Path "$Reg" -Name PATH –Value $NewPath
+}
+
+function PromptAddToPath ($AddedLocation)
+{
+	$message = "Modify your Environment to add DCOS to your PATH?"
+	$yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes", `
+	    "Yes, add DCOS to PATH."
+	$no = New-Object System.Management.Automation.Host.ChoiceDescription "&No", `
+	    "No, don't add DCOS to PATH."
+	$options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
+	$result = $host.ui.PromptForChoice("", $message, $options, 0)
+    if ($result -eq 0)
+	{
+		AddToPath "$AddedLocation"
+	}
+}
+
+switch -regex ($add_path)
+{
+  "[Yy].*" {AddToPath "$installation_path\Scripts"; break}
+  "[Nn].*" {break}
+  default {PromptAddToPath "$installation_path\Scripts"}
+}
 
 echo "Finished installing and configuring DCOS CLI."
 echo ""
