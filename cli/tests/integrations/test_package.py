@@ -167,7 +167,8 @@ def test_install(zk_znode):
     _install_chronos()
     watch_all_deployments()
     _uninstall_chronos()
-    get_services(expected_count=1, args=['--inactive'])
+    services = get_services(args=['--inactive'])
+    assert len(services) >= 1
 
 
 def test_install_missing_options_file():
