@@ -108,3 +108,14 @@ def _collect_logs(dest, max_lines):
     tar_file = os.path.join(dest, 'logs.tgz')
     make_tarfile(tar_file, LOG_DIR)
     print("created aggregated logs {}".format(tar_file))
+
+
+def _run_across_node():
+    nodes_json = check_output(["dcos", "node", "--json"])
+    nodes = json.loads(nodes_json.decode('utf-8'))
+
+    for node in nodes:
+        slave_id = node['id']
+        print("Executing commands on node {}".format(slave_id))
+        #with open(log_filename('slave_{}'.format(slave_id)), "w") as outfile:
+        print('dcos node ssh --slave={} "uptime"'.format(slave_id))

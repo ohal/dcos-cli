@@ -3,6 +3,7 @@
 Usage:
     dcos get-support --info
     dcos get-support collect-logs --dest=<path> [--max-lines=<count>]
+    dcos get-support diagnostics --dest=<path>
     dcos get-support ship-logs  --source=<file> --url=<url>
     dcos get-support create-tunnel --host=<host> --listen-on=<port> --user=<user> --passwd=<passwd>
 
@@ -78,8 +79,14 @@ def _ship_logs(source, url):
         print('{} uploaded successfully'.format(source))
 
 
+def _run_diagnostics(dest):
+    print('Running diagnostics across cluster. Saving log to {}'.format(dest))
+    collectlogs._run_across_node()
+
+
 def _create_tunnel(host, listen_on, user, passwd):
-    print('create tunnel to {}, on {}, auth - {}/{}'.format(host, listen_on, user, passwd))
+    print('Create tunnel to {}, on {}, auth - {}/{}'.format(
+        host, listen_on, user, passwd))
 
 
 def _cmds():
@@ -98,6 +105,11 @@ def _cmds():
             hierarchy=['get-support', 'ship-logs'],
             arg_keys=['--source', '--url'],
             function=_ship_logs),
+
+        cmds.Command(
+            hierarchy=['get-support', 'diagnostics'],
+            arg_keys=['--dest'],
+            function=_run_diagnostics),
 
         cmds.Command(
             hierarchy=['get-support', 'create-tunnel'],
