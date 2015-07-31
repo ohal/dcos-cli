@@ -3,7 +3,7 @@
 Usage:
     dcos get-support --info
     dcos get-support collect-logs --dest=<path> [--max-lines=<count>]
-    dcos get-support ship-logs  --source=<path> --url=<url>
+    dcos get-support ship-logs  --source=<file> --url=<url>
     dcos get-support create-tunnel --host=<host> --listen-on=<port> --user=<user> --passwd=<passwd>
 
 Options:
