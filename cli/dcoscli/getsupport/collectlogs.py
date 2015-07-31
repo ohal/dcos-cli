@@ -6,6 +6,8 @@ import datetime
 import os
 import tarfile
 
+import sh
+
 from dcos import util
 
 
@@ -35,10 +37,8 @@ def _collect_master_logs(max_lines):
     # master and slave logs
     with open(log_filename("master"), "w") as outfile:
         print("getting logs from master")
-        call(["dcos", "node", "log",
-              "--lines={}".format(max_lines),
-              "--master"],
-             stdout=outfile)
+        sh.dcos('node', 'log', '--lines={}'.format(max_lines), '--master',
+                _out=outfile)
 
 
 def _collect_node_logs(max_lines):
