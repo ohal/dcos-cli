@@ -26,7 +26,7 @@ with open(createLogFileName("master"), "w") as outfile:
 	call(["dcos", "node", "log", "--lines=10000", "--master"], stdout=outfile)
 
 a = check_output(["dcos", "node", "--json"])
-b = json.loads(a)
+b = json.loads(a.decode('utf-8'))
 
 for i in range(0,len(b)):
 	slaveId = b[i][u'id']
@@ -36,7 +36,7 @@ for i in range(0,len(b)):
 
 # task logs
 a = check_output(["dcos", "task", "--json"])
-b = json.loads(a)
+b = json.loads(a.decode('utf-8'))
 
 for i in range(0,len(b)):
 	taskId = b[i][u'id']
@@ -45,7 +45,18 @@ for i in range(0,len(b)):
 		call(["dcos", "task", "log", "--lines=10000", taskId], stdout=outfile)
 
 # service logs
-# TODO
+
+# may need to set the url on the docker image: "dcos config set core.dcos_url http://master.mesos"
+a = check_output(["dcos", "service", "--json"])
+b = json.loads(a.decode('utf-8'))
+
+for i in range(0,len(b)):
+	serviceName = b[i][u'name'] #name
+	print("getting logs from service " + serviceName)
+	with open(createLogFileName("service_" + serviceName), "w") as outfile:
+		call(["dcos", "service", "log", "--lines=10000", serviceName], stdout=outfile)
+
+ 
 
 # aggregation
 
