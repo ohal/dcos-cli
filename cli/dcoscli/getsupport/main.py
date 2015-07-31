@@ -1,10 +1,10 @@
 """Prepare/request support for DCOS troubleshooting
 
 Usage:
-    dcos getsupport --info
-    dcos getsupport collect-logs [--dest=<path>]
-    dcos getsupport ship-logs --url=<url> [--source=<path>]
-    dcos getsupport create-tunnel --host=<host> --listen-on=<port> --user=<user> --passwd=<passwd>
+    dcos get-support --info
+    dcos get-support collect-logs [--dest=<path>]
+    dcos get-support ship-logs --url=<url> [--source=<path>]
+    dcos get-support create-tunnel --host=<host> --listen-on=<port> --user=<user> --passwd=<passwd>
 
 Options:
     -h, --help       Show this screen
@@ -102,22 +102,22 @@ def _cmds():
 
     return [
         cmds.Command(
-            hierarchy=['getsupport', 'collect-logs'],
-            arg_keys=['<dest>'],
+            hierarchy=['get-support', 'collect-logs'],
+            arg_keys=['--dest'],
             function=_collect_logs),
 
         cmds.Command(
-            hierarchy=['getsupport', 'ship-logs'],
-            arg_keys=['<source>', 'url'],
+            hierarchy=['get-support', 'ship-logs'],
+            arg_keys=['--source', '--url'],
             function=_ship_logs),
 
         cmds.Command(
-            hierarchy=['getsupport', 'create-tunnel'],
-            arg_keys=['<host>', '<user>', '<passwd>', '<listen-on>'],
+            hierarchy=['get-support', 'create-tunnel'],
+            arg_keys=['--host', '--user', '--passwd', '--listen-on'],
             function=_create_tunnel),
 
         cmds.Command(
-            hierarchy=['getsupport'],
+            hierarchy=['get-support'],
             arg_keys=['--info'],
             function=_info),
     ]
