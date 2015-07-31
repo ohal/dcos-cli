@@ -13,6 +13,9 @@ Options:
     --max-lines=N    Maximum N log lines to suck out [default: 100]
 
 """
+import os
+
+import requests
 
 import dcoscli
 import docopt
@@ -50,12 +53,29 @@ def _main():
 
 
 def _collect_logs(dest, max_lines):
-    print('collect logs to {}'.format(dest))
+    print('Collect cluster logs to {}'.format(dest))
     collectlogs._collect_logs(dest, max_lines)
 
 
 def _ship_logs(source, url):
     print('ship logs to {} from {}'.format(url, source))
+
+    content_length = os.path.getsize(source)
+
+    headers = {
+        'Content-Encoding': 'gzip',
+        'X-Sumo-Name': 'DCOS {}'.format(source),
+        'Content-length': content_length,
+    }
+
+    resp = requests.post(url, data=open(source, 'rb'), headers=headers)
+    print('Response from {0} for {1}: {2.status_code} {2.text}'.
+                     format(url, source, resp))
+    if not str(resp.status_code).startswith('20'):
+        raise DCOSException('Upload to {} for {} failed: {}'.format(
+            url, source, resp.text))
+    else:
+        print('{} uploaded successfully'.format(source))
 
 
 def _create_tunnel(host, listen_on, user, passwd):
