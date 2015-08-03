@@ -128,6 +128,14 @@ def test_describe_nonexistent():
                    returncode=1)
 
 
+def test_describe_nonexistent_version():
+    stderr = b'Version a.b.c of package [marathon] is not available\n',
+    assert_command(['dcos', 'package', 'describe', 'marathon',
+                    '--package-version=a.b.c'],
+                   stderr=stderr,
+                   returncode=1)
+
+
 def test_describe():
     stdout = file_bytes(
         'tests/data/package/json/test_describe_marathon.json')
@@ -143,6 +151,14 @@ def test_describe():
         'tests/data/package/json/test_describe_app_marathon.json')
     assert_command(['dcos', 'package', 'describe', '--app', '--options',
                     'tests/data/package/marathon.json', 'marathon'],
+                   stdout=stdout)
+
+
+def test_describe_specific_version():
+    stdout = file_bytes(
+        'tests/data/package/json/test_describe_marathon_0.8.1.json')
+    assert_command(['dcos', 'package', 'describe', '--package-version=0.8.1',
+                    'marathon'],
                    stdout=stdout)
 
 
@@ -203,7 +219,7 @@ def test_install_specific_version():
 
 
 def test_install_bad_package_version():
-    stderr = b'Package [helloworld] not available with version a.b.c\n'
+    stderr = b'Version a.b.c of package [helloworld] is not available\n'
     assert_command(
         ['dcos', 'package', 'install', 'helloworld',
          '--package-version=a.b.c'],

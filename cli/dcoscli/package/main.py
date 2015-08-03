@@ -58,7 +58,8 @@ def _cmds():
 
         cmds.Command(
             hierarchy=['package', 'describe'],
-            arg_keys=['<package_name>', '--cli', '--app', '--options'],
+            arg_keys=['<package_name>', '--package-version', '--cli', '--app',
+                      '--options'],
             function=_describe),
 
         cmds.Command(
@@ -158,11 +159,13 @@ def _update(validate):
     return 0
 
 
-def _describe(package_name, cli, app, options_path):
+def _describe(package_name, package_version, cli, app, options_path):
     """Describe the specified package.
 
     :param package_name: The package to describe
     :type package_name: str
+    :param package_version: package version to describe
+    :type package_version: str
     :returns: Process status
     :rtype: int
     """
@@ -174,14 +177,19 @@ def _describe(package_name, cli, app, options_path):
     if pkg is None:
         raise DCOSException("Package [{}] not found".format(package_name))
 
-    # TODO(CD): Make package version to describe configurable
-    pkg_revision = pkg.latest_package_revision()
-    pkg_json = pkg.package_json(pkg_revision)
-    revision_map = pkg.package_revisions_map()
-    pkg_versions = list(revision_map.values())
+    pkg_revision = pkg.latest_package_revision(package_version)
 
-    del pkg_json['version']
-    pkg_json['versions'] = pkg_versions
+    if pkg_revision is None:
+        raise DCOSException("Version {} of package [{}] is not available".
+                            format(package_version, package_name))
+
+    pkg_json = pkg.package_json(pkg_revision)
+
+    if package_version is None:
+        revision_map = pkg.package_revisions_map()
+        pkg_versions = list(revision_map.values())
+        del pkg_json['version']
+        pkg_json['versions'] = pkg_versions
 
     if cli or app:
         user_options = _user_options(options_path)
@@ -274,9 +282,11 @@ def _install(package_name, package_version, options_path, app_id, cli, app,
 
     pkg_revision = pkg.latest_package_revision(package_version)
     if pkg_revision is None:
-        msg = "Package [{}] not available".format(package_name)
         if package_version is not None:
-            msg += " with version {}".format(package_version)
+            msg = "Version {} of package [{}] is not available".format(
+                package_version, package_name)
+        else:
+            msg = "Package [{}] not available".format(package_name)
         raise DCOSException(msg)
 
     pkg_json = pkg.package_json(pkg_revision)
