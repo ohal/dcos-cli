@@ -325,16 +325,20 @@ def _format_validation_error(error):
     """
 
     error_message = _hack_error_message_fix(error.message)
+    path = '.'.join([str(path) for path in error.absolute_path])
 
-    match = re.search("(.+) is a required property", error_message)
-    if match:
+    req_match = re.search("(.+) is a required property", error_message)
+    url_match = re.search("^(https{0,1}://).+", str(error.instance))
+
+    if req_match:
         message = 'Error: missing required property {}.'.format(
-            match.group(1))
+            req_match.group(1))
+    elif path == "core.dcos_url" and not url_match:
+        message = "Error: Please check your dcos_url. Missing http(s)://"
     else:
         message = 'Error: {}\n'.format(error_message)
         if len(error.absolute_path) > 0:
-            message += 'Path: {}\n'.format(
-                       '.'.join([str(path) for path in error.absolute_path]))
+            message += 'Path: {}\n'.format(path)
         message += 'Value: {}'.format(json.dumps(error.instance))
 
     return message

@@ -101,6 +101,13 @@ def test_get_missing_property(env):
     _get_missing_value('missing.property', env)
 
 
+def test_invalid_dcos_url(env):
+    stderr = b'Error: Please check your dcos_url. Missing http(s)://\n'
+    assert_command(['dcos', 'config', 'set', 'core.dcos_url', 'abc.com'],
+                   stderr=stderr,
+                   returncode=1)
+
+
 def test_get_top_property(env):
     stderr = (
         b"Property 'package' doesn't fully specify a value - "
@@ -406,6 +413,14 @@ def test_prepend_url_validation(env):
         'file:///path/to/file.extension',
         env)
     _set_value('package.sources', default_value, env)
+
+
+def test_mssing_http_error(env):
+    stderr = b"Error: Please check your dcos_url. Missing http(s)\n"
+    assert_command(['dcos', 'config', 'set', 'core.dcos_url', 'bad_url.org'],
+                   returncode=1,
+                   stderr=stderr,
+                   env=env)
 
 
 def test_fail_url_validation(env):
