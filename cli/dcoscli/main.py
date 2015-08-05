@@ -67,10 +67,12 @@ def _main():
         version='dcos version {}'.format(dcoscli.version),
         options_first=True)
 
-    if not _config_log_level_environ(args['--log-level']):
+    log_level = args['--log-level']
+    if not _config_log_level_environ(log_level):
         return 1
 
-    _config_debug_environ(args['--debug'])
+    debug = args['--debug']
+    _config_debug_environ(debug)
 
     util.configure_process_from_environ()
 
@@ -89,24 +91,36 @@ def _main():
     subproc = Popen([executable,  command] + args['<args>'],
                     stderr=PIPE)
 
+    if log_level:
+        _config_log_level_environ(log_level, True)
+
+    if debug:
+        _config_debug_environ(debug, True)
+
     return analytics.wait_and_track(subproc)
 
 
-def _config_log_level_environ(log_level):
+def _config_log_level_environ(log_level, unset=False):
     """
     :param log_level: Log level to set
     :type log_level: str
+    :param unset: unset log setting
+    :type unset: bool
     :returns: True if the log level was configured correctly; False otherwise.
     :rtype: bool
     """
 
-    if log_level is None:
+    if unset:
         os.environ.pop(constants.DCOS_LOG_LEVEL_ENV, None)
         return True
 
-    log_level = log_level.lower()
+    log_level = ((log_level and log_level.lower()) or
+                 os.environ.get(constants.DCOS_LOG_LEVEL_ENV, None))
     if log_level in constants.VALID_LOG_LEVEL_VALUES:
         os.environ[constants.DCOS_LOG_LEVEL_ENV] = log_level
+        return True
+
+    if log_level is None:
         return True
 
     msg = 'Log level set to an unknown value {!r}. Valid values are {!r}'
@@ -115,17 +129,19 @@ def _config_log_level_environ(log_level):
     return False
 
 
-def _config_debug_environ(is_debug):
+def _config_debug_environ(is_debug, unset=False):
     """
     :param is_debug: If true then enable debug; otherwise disable debug
     :type is_debug: bool
+    :param unset: unset debug setting
+    :type bool: unset
     :rtype: None
     """
 
-    if is_debug:
-        os.environ[constants.DCOS_DEBUG_ENV] = 'true'
-    else:
+    if unset:
         os.environ.pop(constants.DCOS_DEBUG_ENV, None)
+    elif is_debug:
+        os.environ[constants.DCOS_DEBUG_ENV] = 'true'
 
 
 def _is_valid_configuration():
