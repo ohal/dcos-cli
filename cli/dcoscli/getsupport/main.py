@@ -21,13 +21,12 @@ import requests
 import dcoscli
 import docopt
 from dcos import (cmds,
+                  getsupport,
                   emitting,
                   http,
                   subcommand,
                   util)
 from dcos.errors import DCOSException
-
-from . import collectlogs
 
 emitter = emitting.FlatEmitter()
 logger = util.get_logger(__name__)
@@ -55,7 +54,7 @@ def _main():
 
 def _collect_logs(dest, max_lines):
     print('Collect cluster logs to {}'.format(dest))
-    collectlogs._collect_logs(dest, max_lines)
+    getsupport._collect_logs(dest, max_lines)
 
 
 def _ship_logs(source, url):
@@ -81,7 +80,7 @@ def _ship_logs(source, url):
 
 def _run_diagnostics(dest):
     print('Running diagnostics across cluster. Saving log to {}'.format(dest))
-    collectlogs._run_across_node()
+    getsupport._run_across_node()
 
 
 def _create_tunnel(host, listen_on, user, passwd):
